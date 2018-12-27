@@ -22,16 +22,22 @@ var snakeCurrentDirection = snakeDirections.down;
 //game controll flags
 var isGameRunning = false;
 
+//apple
+var appleSize = 10;
+var applePosX;
+var applePosY;
+
 function snakeGame(canvasId) {
   canvas = document.getElementById(canvasId);
   ctx = canvas.getContext('2d');
   canvas.width = cw;
   canvas.height = ch;
   window.addEventListener('keydown', moveKeyPressed);
-  drawSnake();
 }
 
 function startGame() {
+  drawSnake();
+  drawApple();
   setInterval(function(){
     switch(snakeCurrentDirection) {
       case snakeDirections.left:
@@ -136,6 +142,10 @@ function moveSnakeHeadDown() {
 }
 
 function updateSnakePosition() {
+  if(isAppleEaten()) {
+    snakeBody.unshift([applePosX, applePosY])
+    drawApple();
+  }
   snakeBody.unshift([snakeHeadPositionX, snakeHeadPositionY]);
   var tailToRemove = snakeBody.pop();
   drawSnake();
@@ -147,4 +157,25 @@ function drawSnake() {
   {
     ctx.fillRect(pos[0],pos[1], snakeSize, snakeSize);
   });
+}
+
+function drawApple() {
+  applePosX = Math.floor(Math.random()*44)*10;
+  applePosY = Math.floor(Math.random()*44)*10;
+
+  ctx.fillRect(applePosX, applePosY, appleSize, appleSize);
+}
+
+function isAppleEaten() {
+  if(snakeHeadPositionX === applePosX && snakeHeadPositionY === applePosY) {
+    return true;
+  }
+  return false;
+}
+
+function addEatenAppleToSnake() {
+  var snakeHead = snakeBody.shift();
+  snakeBody.unshift([applePosX, applePosY]);
+  snakeBody.unshift(snakeHead);
+  ctx.clearRect(applePosX, applePosY, appleSize, appleSize);
 }
