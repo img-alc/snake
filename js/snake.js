@@ -1,4 +1,4 @@
-// Canvas object
+// Canvas Object
 var canvas;
 var ctx;
 var cw = 450;
@@ -26,6 +26,8 @@ var isGameRunning = false;
 var appleSize = 10;
 var applePosX;
 var applePosY;
+var possibleApplePosX;
+var possibleApplePosY;
 
 function snakeGame(canvasId) {
   canvas = document.getElementById(canvasId);
@@ -143,7 +145,7 @@ function moveSnakeHeadDown() {
 
 function updateSnakePosition() {
   if(isAppleEaten()) {
-    snakeBody.unshift([applePosX, applePosY])
+    snakeBody.unshift([applePosX, applePosY]);
     drawApple();
   }
   snakeBody.unshift([snakeHeadPositionX, snakeHeadPositionY]);
@@ -160,10 +162,26 @@ function drawSnake() {
 }
 
 function drawApple() {
-  applePosX = Math.floor(Math.random()*44)*10;
-  applePosY = Math.floor(Math.random()*44)*10;
-
+  generateApplePosition();
   ctx.fillRect(applePosX, applePosY, appleSize, appleSize);
+}
+
+
+function generateApplePosition() {
+  possibleApplePosX = Math.floor(Math.random()*(cw/appleSize)-1)*appleSize;
+  possibleApplePosY = Math.floor(Math.random()*(ch/appleSize)-1)*appleSize;
+
+  if(snakeBody.forEach(function(pos){
+      if(pos[0] === possibleApplePosX && pos[1] === possibleApplePosY) {
+        return true;
+      }
+      return false;
+  })) {
+    generateApplePosition();
+  } else {
+    applePosX = possibleApplePosX;
+    applePosY = possibleApplePosY;
+  }
 }
 
 function isAppleEaten() {
