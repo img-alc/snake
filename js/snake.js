@@ -9,9 +9,9 @@ var snakeSize = 10;
 var snakeHeadPositionX = 50;
 var snakeHeadPositionY = 50;
 var snakeBody = [
-[snakeHeadPositionX, snakeHeadPositionY],
-[snakeHeadPositionX, snakeHeadPositionY-snakeSize],
-[snakeHeadPositionX, snakeHeadPositionY-snakeSize]
+  [snakeHeadPositionX, snakeHeadPositionY],
+  [snakeHeadPositionX, snakeHeadPositionY-snakeSize],
+  [snakeHeadPositionX, snakeHeadPositionY-snakeSize]
 ];
 var snakeSpeed = 60;
 
@@ -21,7 +21,7 @@ var snakeCurrentDirection = snakeDirections.down;
 
 //game controll flags
 var isGameRunning = false;
-
+var gameRefreshInterval;
 //apple
 var appleSize = 10;
 var applePosX;
@@ -40,20 +40,21 @@ function snakeGame(canvasId) {
 function startGame() {
   drawSnake();
   drawApple();
-  setInterval(function(){
+
+  gameRefreshInterval = setInterval(function(){
     switch(snakeCurrentDirection) {
       case snakeDirections.left:
-        moveSnakeHeadLeft();
-        break;
+      moveSnakeHeadLeft();
+      break;
       case snakeDirections.up:
-        moveSnakeHeadUp();
-        break;
+      moveSnakeHeadUp();
+      break;
       case snakeDirections.right:
-        moveSnakeHeadRight();
-        break;
+      moveSnakeHeadRight();
+      break;
       case snakeDirections.down:
-        moveSnakeHeadDown();
-        break;
+      moveSnakeHeadDown();
+      break;
     }
   },10000/snakeSpeed);
 
@@ -66,34 +67,34 @@ function moveKeyPressed(e) {
     {
       // left
       case 37:
-        // action when pressing left key
-        if(snakeCurrentDirection !== snakeDirections.left && snakeCurrentDirection !== snakeDirections.right) {
-          moveSnakeHeadLeft();
-        }
-        break;
-        // up
-        case 38:
-        // action when pressing up key
-        if(snakeCurrentDirection !== snakeDirections.up && snakeCurrentDirection !== snakeDirections.down) {
-          moveSnakeHeadUp();
-        }
-        break;
+      // action when pressing left key
+      if(snakeCurrentDirection !== snakeDirections.left && snakeCurrentDirection !== snakeDirections.right) {
+        moveSnakeHeadLeft();
+      }
+      break;
+      // up
+      case 38:
+      // action when pressing up key
+      if(snakeCurrentDirection !== snakeDirections.up && snakeCurrentDirection !== snakeDirections.down) {
+        moveSnakeHeadUp();
+      }
+      break;
       // right
       case 39:
-        // action when pressing right key
-        if(snakeCurrentDirection !== snakeDirections.right && snakeCurrentDirection !== snakeDirections.left) {
-          moveSnakeHeadRight();
-        }
-        break;
+      // action when pressing right key
+      if(snakeCurrentDirection !== snakeDirections.right && snakeCurrentDirection !== snakeDirections.left) {
+        moveSnakeHeadRight();
+      }
+      break;
       // down
       case 40:
-        // action when pressing down key
-        if(snakeCurrentDirection !== snakeDirections.down && snakeCurrentDirection !== snakeDirections.up) {
-          moveSnakeHeadDown();
-        }
-        break;
+      // action when pressing down key
+      if(snakeCurrentDirection !== snakeDirections.down && snakeCurrentDirection !== snakeDirections.up) {
+        moveSnakeHeadDown();
+      }
+      break;
       default:
-        break;
+      break;
     }
   }  else {
     startGame();
@@ -104,7 +105,7 @@ function moveSnakeHeadLeft() {
   if(snakeHeadPositionX === 0) {
     snakeHeadPositionX = cw-snakeSize;
   } else {
-      snakeHeadPositionX -= snakeSize;
+    snakeHeadPositionX -= snakeSize;
   }
   snakeCurrentDirection = snakeDirections.left;
   updateSnakePosition();
@@ -126,7 +127,7 @@ function moveSnakeHeadRight() {
   if(snakeHeadPositionX === cw-snakeSize) {
     snakeHeadPositionX = 0;
   } else {
-      snakeHeadPositionX += snakeSize;
+    snakeHeadPositionX += snakeSize;
   }
   snakeCurrentDirection = snakeDirections.right;
   updateSnakePosition();
@@ -147,6 +148,10 @@ function updateSnakePosition() {
   if(isAppleEaten()) {
     snakeBody.unshift([applePosX, applePosY]);
     drawApple();
+  } else {
+    if(checkCollision()) {
+      endGame();
+    }
   }
   snakeBody.unshift([snakeHeadPositionX, snakeHeadPositionY]);
   var tailToRemove = snakeBody.pop();
@@ -170,12 +175,11 @@ function drawApple() {
 function generateApplePosition() {
   possibleApplePosX = Math.floor(Math.random()*(cw/appleSize)-1)*appleSize;
   possibleApplePosY = Math.floor(Math.random()*(ch/appleSize)-1)*appleSize;
-
   if(snakeBody.forEach(function(pos){
-      if(pos[0] === possibleApplePosX && pos[1] === possibleApplePosY) {
-        return true;
-      }
-      return false;
+    if(pos[0] === possibleApplePosX && pos[1] === possibleApplePosY) {
+      return true;
+    }
+    return false;
   })) {
     generateApplePosition();
   } else {
@@ -192,8 +196,27 @@ function isAppleEaten() {
 }
 
 function addEatenAppleToSnake() {
-  var snakeHead = snakeBody.shift();
-  snakeBody.unshift([applePosX, applePosY]);
-  snakeBody.unshift(snakeHead);
-  ctx.clearRect(applePosX, applePosY, appleSize, appleSize);
+  var snakeBodyHeadX = snakeBody[0][0];
+  var snakeBodyHeadY = snakeBody[0][1];
+  snakeBody[0][0] = applePosX;
+  snakeBody[0][1] = applePosY;
+  snakeBody.unshift([snakeBodyHeadX, snakeBodyHeadY]);
+}
+
+function checkCollision() {
+  for (var i = 1; i < snakeBody.length; i++) {
+    if(snakeBody[i][0] === snakeHeadPositionX && snakeBody[i][1] === snakeHeadPositionY) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function endGame() {
+  clearInterval(gameRefreshInterval);
+  window.removeEventListener('keydown', moveKeyPressed);
+  ctx.textAlign = "center";
+  ctx.fillText("Game Over", cw/2, ch/2);
+  isGameRunning = false;
+
 }
